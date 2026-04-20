@@ -1,0 +1,16 @@
+[Desktop Entry]
+Comment=WeChat
+Comment[zh_CN]=微信
+Exec=/home/gallon/.local/bin/wechat %u
+Icon=wechat
+Name=WeChat
+Name[zh_CN]=微信
+Categories=Utility;Network;InstantMessaging;Chat;
+Terminal=false
+Type=Application
+Keywords=wechat;weixin;we;w;
+Keywords[zh_CN]=微;微信;wechat;weixin;we;w;
+X-GNOME-SingleWindow=true
+SingleMainWindow=true
+StartupWMClass=wechat
+StartupNotify=false

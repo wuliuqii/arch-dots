@@ -1,0 +1,6 @@
+[Unit]
+Description=Sync external Catppuccin theme with DMS light/dark mode
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/catppuccin-mode-sync

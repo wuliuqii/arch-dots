@@ -1,0 +1,17 @@
+# Secrets and machine-local material.
+/secrets/*.key
+/secrets/*.json
+!/secrets/README.md
+!/secrets/*.age
+!/secrets/recipients.txt
+
+# Optional offline bootstrap payloads. Keep these out of git by default;
+# put them on USB or force-add in a private repo if desired.
+/bootstrap/proxy/sing-box
+/bootstrap/proxy/config.bootstrap.json
+
+# Generated caches/state.
+*.log
+*.swp
+*.tmp
+.DS_Store

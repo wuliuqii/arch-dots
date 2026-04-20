@@ -1,0 +1,298 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage:
+  catppuccin-mode dark
+  catppuccin-mode light
+  catppuccin-mode toggle
+  catppuccin-mode status
+  catppuccin-mode dark --external-only
+  catppuccin-mode light --external-only
+EOF
+}
+
+mode="${1:-toggle}"
+external_only=0
+
+if [[ "${2:-}" == "--external-only" ]]; then
+  external_only=1
+fi
+
+current_mode() {
+  if command -v dms >/dev/null 2>&1; then
+    dms ipc call theme getMode 2>/dev/null | tr -d '[:space:]' || true
+  fi
+}
+
+case "$mode" in
+  dark|light|toggle|status) ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac
+
+if [[ "$mode" == "status" ]]; then
+  echo "dms=$(current_mode)"
+  echo "gtk=$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null || true)"
+  echo "icons=$(gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null || true)"
+  echo "cursor=$(gsettings get org.gnome.desktop.interface cursor-theme 2>/dev/null || true)"
+  exit 0
+fi
+
+if [[ "$mode" == "toggle" ]]; then
+  case "$(current_mode)" in
+    light) mode="dark" ;;
+    *) mode="light" ;;
+  esac
+fi
+
+if [[ "$mode" == "dark" ]]; then
+  gtk_theme="catppuccin-mocha-mauve-standard+default"
+  cursor_theme="catppuccin-mocha-light-cursors"
+  fcitx_theme="catppuccin-mocha-mauve"
+  qt5_scheme="/usr/share/qt5ct/colors/catppuccin-mocha-mauve.conf"
+  qt6_scheme="/usr/share/qt6ct/colors/catppuccin-mocha-mauve.conf"
+  ghostty_theme="Catppuccin Mocha"
+  ghostty_titlebar_background="#1e1e2e"
+  ghostty_titlebar_foreground="#cdd6f4"
+  foot_theme="/usr/share/foot/themes/catppuccin-mocha"
+  foot_initial_color_theme="dark"
+  btop_theme="$HOME/.config/btop/themes/catppuccin_mocha.theme"
+  niri_base="#1e1e2e"
+  niri_overlay="#6c7086"
+  niri_mauve="#cba6f7"
+  niri_lavender="#b4befe"
+  niri_red="#f38ba8"
+  niri_shadow="#00000090"
+  icon_theme="Papirus-Dark"
+  color_scheme="prefer-dark"
+  prefer_dark=1
+else
+  gtk_theme="catppuccin-latte-mauve-standard+default"
+  cursor_theme="catppuccin-latte-dark-cursors"
+  fcitx_theme="catppuccin-latte-mauve"
+  qt5_scheme="/usr/share/qt5ct/colors/catppuccin-latte-mauve.conf"
+  qt6_scheme="/usr/share/qt6ct/colors/catppuccin-latte-mauve.conf"
+  ghostty_theme="Catppuccin Latte"
+  ghostty_titlebar_background="#eff1f5"
+  ghostty_titlebar_foreground="#4c4f69"
+  foot_theme="/usr/share/foot/themes/catppuccin-latte"
+  foot_initial_color_theme="light"
+  btop_theme="$HOME/.config/btop/themes/catppuccin_latte.theme"
+  niri_base="#eff1f5"
+  niri_overlay="#9ca0b0"
+  niri_mauve="#8839ef"
+  niri_lavender="#7287fd"
+  niri_red="#d20f39"
+  niri_shadow="#00000045"
+  icon_theme="Papirus-Light"
+  color_scheme="default"
+  prefer_dark=0
+fi
+
+set_key_value() {
+  local file="$1" key="$2" value="$3"
+  local tmp
+  tmp="$(mktemp)"
+  grep -Ev "^${key}[[:space:]]*=" "$file" > "$tmp" || true
+  printf '%s=%s\n' "$key" "$value" >> "$tmp"
+  mv "$tmp" "$file"
+}
+
+mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0" "$HOME/.config/qt5ct" "$HOME/.config/qt6ct" "$HOME/.config/fcitx5/conf" "$HOME/.icons/default" "$HOME/.config/environment.d"
+
+for gtk_file in "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-4.0/settings.ini"; do
+  if [[ ! -f "$gtk_file" ]]; then
+    printf '[Settings]\n' > "$gtk_file"
+  fi
+  set_key_value "$gtk_file" gtk-theme-name "$gtk_theme"
+  set_key_value "$gtk_file" gtk-icon-theme-name "$icon_theme"
+  set_key_value "$gtk_file" gtk-cursor-theme-name "$cursor_theme"
+  set_key_value "$gtk_file" gtk-application-prefer-dark-theme "$prefer_dark"
+done
+
+cat > "$HOME/.icons/default/index.theme" <<EOF
+[Icon Theme]
+Inherits=$cursor_theme
+EOF
+
+set_key_value "$HOME/.config/environment.d/dev-session.conf" XCURSOR_THEME "$cursor_theme"
+set_key_value "$HOME/.config/environment.d/dev-session.conf" XCURSOR_SIZE "24"
+
+if [[ -f "$HOME/.config/fcitx5/conf/classicui.conf" ]]; then
+  set_key_value "$HOME/.config/fcitx5/conf/classicui.conf" Theme "$fcitx_theme"
+  set_key_value "$HOME/.config/fcitx5/conf/classicui.conf" DarkTheme "$fcitx_theme"
+fi
+
+for qt_file in "$HOME/.config/qt5ct/qt5ct.conf" "$HOME/.config/qt6ct/qt6ct.conf"; do
+  if [[ ! -f "$qt_file" ]]; then
+    printf '[Appearance]\n' > "$qt_file"
+  fi
+  set_key_value "$qt_file" color_scheme_path "$([[ "$qt_file" == *qt5ct* ]] && echo "$qt5_scheme" || echo "$qt6_scheme")"
+  set_key_value "$qt_file" custom_palette "true"
+  set_key_value "$qt_file" icon_theme "$icon_theme"
+done
+
+ghostty_config="$HOME/.config/ghostty/config.ghostty"
+if [[ -f "$ghostty_config" ]]; then
+  set_key_value "$ghostty_config" theme "$ghostty_theme"
+  set_key_value "$ghostty_config" window-theme "ghostty"
+  set_key_value "$ghostty_config" window-titlebar-background "$ghostty_titlebar_background"
+  set_key_value "$ghostty_config" window-titlebar-foreground "$ghostty_titlebar_foreground"
+fi
+
+foot_config="$HOME/.config/foot/foot.ini"
+if [[ -f "$foot_config" ]]; then
+  python - "$foot_config" "$foot_initial_color_theme" "$foot_theme" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+initial = sys.argv[2]
+theme = sys.argv[3]
+
+lines = path.read_text().splitlines()
+out = []
+section = None
+inserted_initial = False
+
+for line in lines:
+    stripped = line.strip()
+    if stripped.startswith("include="):
+        continue
+
+    if stripped.startswith("[") and stripped.endswith("]"):
+        if section == "main" and not inserted_initial:
+            out.append(f"initial-color-theme={initial}")
+            inserted_initial = True
+        section = stripped[1:-1]
+        out.append(line)
+        continue
+
+    if section == "main" and stripped.startswith("initial-color-theme="):
+        if not inserted_initial:
+            out.append(f"initial-color-theme={initial}")
+            inserted_initial = True
+        continue
+
+    if stripped.startswith("initial-color-theme="):
+        continue
+
+    out.append(line)
+
+if not inserted_initial:
+    try:
+        main_index = next(i for i, line in enumerate(out) if line.strip() == "[main]")
+    except StopIteration:
+        out.insert(0, f"initial-color-theme={initial}")
+        out.insert(0, "[main]")
+    else:
+        out.insert(main_index + 1, f"initial-color-theme={initial}")
+
+out.insert(0, f"include={theme}")
+
+path.write_text("\n".join(out).rstrip() + "\n")
+PY
+fi
+
+btop_config="$HOME/.config/btop/btop.conf"
+if [[ -f "$btop_config" ]]; then
+  set_key_value "$btop_config" color_theme "\"$btop_theme\""
+  set_key_value "$btop_config" theme_background "true"
+  set_key_value "$btop_config" truecolor "true"
+fi
+
+niri_colors="$HOME/.config/niri/dms/colors.kdl"
+mkdir -p "$(dirname "$niri_colors")"
+cat > "$niri_colors" <<EOF
+// Managed by catppuccin-mode.
+// This intentionally replaces DMS/matugen colors so niri follows Catppuccin.
+
+layout {
+    background-color "transparent"
+
+    focus-ring {
+        active-color   "$niri_mauve"
+        inactive-color "#00000000"
+        urgent-color   "$niri_red"
+    }
+
+    border {
+        active-color   "#00000000"
+        inactive-color "#00000000"
+        urgent-color   "$niri_red"
+    }
+
+    shadow {
+        color "$niri_shadow"
+    }
+
+    tab-indicator {
+        active-color   "$niri_mauve"
+        inactive-color "$niri_overlay"
+        urgent-color   "$niri_red"
+    }
+
+    insert-hint {
+        color "${niri_mauve}80"
+    }
+}
+
+recent-windows {
+    highlight {
+        active-color "$niri_lavender"
+        urgent-color "$niri_red"
+    }
+}
+EOF
+
+python - "$HOME/.config/DankMaterialShell/settings.json" "$icon_theme" "$cursor_theme" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+icon_theme = sys.argv[2]
+cursor_theme = sys.argv[3]
+
+data = json.loads(path.read_text())
+data["iconTheme"] = icon_theme
+data.setdefault("cursorSettings", {})["theme"] = cursor_theme
+data["runUserMatugenTemplates"] = False
+for key in list(data):
+    if key.startswith("matugenTemplate"):
+        data[key] = False
+path.write_text(json.dumps(data, indent=2) + "\n")
+PY
+
+gsettings set org.gnome.desktop.interface color-scheme "$color_scheme" || true
+gsettings set org.gnome.desktop.interface gtk-theme "$gtk_theme" || true
+gsettings set org.gnome.desktop.interface icon-theme "$icon_theme" || true
+gsettings set org.gnome.desktop.interface cursor-theme "$cursor_theme" || true
+
+systemctl --user set-environment XCURSOR_THEME="$cursor_theme" XCURSOR_SIZE=24 || true
+dbus-update-activation-environment --systemd XCURSOR_THEME="$cursor_theme" XCURSOR_SIZE=24 || true
+
+if [[ $external_only -eq 0 ]] && command -v dms >/dev/null 2>&1; then
+  dms ipc call theme "$mode" >/dev/null 2>&1 || true
+fi
+fcitx5-remote -r >/dev/null 2>&1 || true
+if [[ $external_only -eq 0 ]]; then
+  systemctl --user restart dms.service >/dev/null 2>&1 || true
+fi
+
+echo "Switched to Catppuccin $mode."
+echo "GTK: $gtk_theme"
+echo "Qt: $([[ "$mode" == dark ]] && echo "$qt5_scheme" || echo "$qt5_scheme")"
+echo "Ghostty: $ghostty_theme"
+echo "Foot: $foot_theme"
+echo "Btop: $btop_theme"
+echo "Niri accent: $niri_mauve"
+echo "Fcitx5: $fcitx_theme"
+echo "Cursor: $cursor_theme"
+echo "Icons: $icon_theme"
+echo
+echo "Restart already-running apps to make them pick up the new theme."

@@ -1,0 +1,39 @@
+// Managed by catppuccin-mode.
+// This intentionally replaces DMS/matugen colors so niri follows Catppuccin.
+
+layout {
+    background-color "transparent"
+
+    focus-ring {
+        active-color   "#cba6f7"
+        inactive-color "#00000000"
+        urgent-color   "#f38ba8"
+    }
+
+    border {
+        active-color   "#00000000"
+        inactive-color "#00000000"
+        urgent-color   "#f38ba8"
+    }
+
+    shadow {
+        color "#00000090"
+    }
+
+    tab-indicator {
+        active-color   "#cba6f7"
+        inactive-color "#6c7086"
+        urgent-color   "#f38ba8"
+    }
+
+    insert-hint {
+        color "#cba6f780"
+    }
+}
+
+recent-windows {
+    highlight {
+        active-color "#b4befe"
+        urgent-color "#f38ba8"
+    }
+}

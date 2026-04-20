@@ -1,0 +1,17 @@
+rime-ice-git
+dms-shell-niri
+sing-box-bin
+openai-codex
+cc-switch-bin
+wechat
+wechat-bin
+wemeet-bin
+google-chrome
+bibata-cursor-theme-bin
+catppuccin-gtk-theme-mocha
+catppuccin-gtk-theme-latte
+catppuccin-cursors-mocha
+catppuccin-cursors-latte
+catppuccin-fcitx5-git
+catppuccin-qt5ct-git
+papirus-folders-catppuccin-git

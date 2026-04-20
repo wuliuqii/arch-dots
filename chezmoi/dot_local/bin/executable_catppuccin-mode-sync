@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+session_file="${XDG_STATE_HOME:-$HOME/.local/state}/DankMaterialShell/session.json"
+
+if [[ ! -f "$session_file" ]]; then
+  exit 0
+fi
+
+mode="$(python - "$session_file" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+try:
+    data = json.loads(Path(sys.argv[1]).read_text())
+except Exception:
+    sys.exit(0)
+
+print("light" if data.get("isLightMode") else "dark")
+PY
+)"
+
+case "$mode" in
+  light|dark)
+    "$HOME/.local/bin/catppuccin-mode" "$mode" --external-only >/dev/null
+    ;;
+esac

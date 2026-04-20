@@ -1,0 +1,103 @@
+#!/bin/sh
+
+set -eu
+
+USER_CONFIG="${HOME}/.config/sing-box/config.json"
+SYSTEM_CONFIG="/etc/sing-box/config.json"
+UNIT="sing-box"
+
+need_cmd() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        printf '%s\n' "missing command: $1" >&2
+        exit 1
+    fi
+}
+
+need_file() {
+    if [ ! -f "$1" ]; then
+        printf '%s\n' "missing file: $1" >&2
+        exit 1
+    fi
+}
+
+show_help() {
+    cat <<'EOF'
+usage: sing-box-manage <command>
+
+commands:
+  check    validate user config
+  format   format user config in place
+  test     run sing-box in foreground with user config
+  install  copy user config to /etc/sing-box/config.json
+  enable   enable and start system service
+  disable  stop and disable system service
+  restart  restart system service
+  logs     show service logs
+  ui       print local clash api ui url
+EOF
+}
+
+cmd_check() {
+    need_cmd sing-box
+    need_file "${USER_CONFIG}"
+    sing-box check -c "${USER_CONFIG}"
+}
+
+cmd_format() {
+    need_cmd sing-box
+    need_file "${USER_CONFIG}"
+    sing-box format -w -c "${USER_CONFIG}"
+}
+
+cmd_test() {
+    need_cmd sing-box
+    need_file "${USER_CONFIG}"
+    printf '%s\n' 'before testing, disable Sparkle tun/sysproxy to avoid conflicts.'
+    sudo sing-box run -c "${USER_CONFIG}"
+}
+
+cmd_install() {
+    need_file "${USER_CONFIG}"
+    printf '%s\n' 'copying config to /etc/sing-box/config.json'
+    sudo install -Dm600 "${USER_CONFIG}" "${SYSTEM_CONFIG}"
+    printf '%s\n' 'installed.'
+}
+
+cmd_enable() {
+    printf '%s\n' 'before enabling, disable Sparkle tun/sysproxy to avoid conflicts.'
+    sudo systemctl enable --now "${UNIT}"
+}
+
+cmd_disable() {
+    sudo systemctl disable --now "${UNIT}"
+}
+
+cmd_restart() {
+    sudo systemctl restart "${UNIT}"
+}
+
+cmd_logs() {
+    sudo journalctl -u "${UNIT}" --output cat -e
+}
+
+cmd_ui() {
+    printf '%s\n' 'http://127.0.0.1:9090/ui'
+}
+
+case "${1:-}" in
+    check) cmd_check ;;
+    format) cmd_format ;;
+    test) cmd_test ;;
+    install) cmd_install ;;
+    enable) cmd_enable ;;
+    disable) cmd_disable ;;
+    restart) cmd_restart ;;
+    logs) cmd_logs ;;
+    ui) cmd_ui ;;
+    ""|-h|--help|help) show_help ;;
+    *)
+        printf '%s\n' "unknown command: $1" >&2
+        show_help >&2
+        exit 1
+        ;;
+esac
