@@ -9,6 +9,7 @@ Encrypted files committed here:
 - `wifi.env.age`: optional Wi-Fi bootstrap credentials
 - `cc-switch-db.age`: optional cc-switch runtime database
 - `cc-switch-settings.age`: optional cc-switch settings
+- `gh-hosts.age`: GitHub CLI host auth config for `~/.config/gh/hosts.yml`
 - `recipients.txt`: public age recipient(s)
 
 The private age identity is not committed. On this machine it was generated at:

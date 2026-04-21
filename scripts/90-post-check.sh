@@ -11,6 +11,7 @@ command -v rg
 command -v fish
 command -v zoxide
 command -v starship
+command -v gh
 command -v codex || true
 command -v cc-switch || true
 

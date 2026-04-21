@@ -35,4 +35,4 @@ restore_secret sing-box-config.age "$HOME/.config/sing-box/config.json" 600
 restore_secret ssh-id_ed25519.age "$HOME/.ssh/id_ed25519" 600
 restore_secret cc-switch-db.age "$HOME/.cc-switch/cc-switch.db" 600
 restore_secret cc-switch-settings.age "$HOME/.cc-switch/settings.json" 600
-
+restore_secret gh-hosts.age "$HOME/.config/gh/hosts.yml" 600

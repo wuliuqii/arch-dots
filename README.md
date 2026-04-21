@@ -111,11 +111,22 @@ The user-side config lives at:
 ~/.config/sing-box/config.json
 ```
 
+GitHub CLI keeps host authentication in:
+
+```text
+~/.config/gh/hosts.yml
+```
+
+Track non-sensitive defaults in `~/.config/gh/config.yml`. If you want to carry
+GitHub CLI authentication across machines, commit only the encrypted
+`secrets/gh-hosts.age` and restore it with `./scripts/25-restore-secrets.sh`.
+
 ## Current Desktop Stack
 
 - niri + DMS/quickshell
 - foot
 - fish + zoxide + starship
+- git + lazygit + GitHub CLI
 - neovim/LazyVim
 - btop with Catppuccin light/dark themes
 - OpenAI Codex and cc-switch helpers
