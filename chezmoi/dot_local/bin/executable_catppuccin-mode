@@ -249,6 +249,7 @@ recent-windows {
 }
 EOF
 
+if [[ $external_only -eq 0 ]]; then
 python - "$HOME/.config/DankMaterialShell/settings.json" "$icon_theme" "$cursor_theme" <<'PY'
 import json
 import sys
@@ -267,6 +268,7 @@ for key in list(data):
         data[key] = False
 path.write_text(json.dumps(data, indent=2) + "\n")
 PY
+fi
 
 gsettings set org.gnome.desktop.interface color-scheme "$color_scheme" || true
 gsettings set org.gnome.desktop.interface gtk-theme "$gtk_theme" || true
