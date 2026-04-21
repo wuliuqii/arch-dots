@@ -36,8 +36,33 @@ local function ghostty_background_mode()
   return hex_is_light(bg) and "light" or "dark"
 end
 
+local function gsettings_background_mode()
+  if vim.fn.executable("gsettings") == 0 then
+    return nil
+  end
+
+  local out = vim.fn.system({ "gsettings", "get", "org.gnome.desktop.interface", "color-scheme" })
+  if vim.v.shell_error ~= 0 then
+    return nil
+  end
+
+  if out:find("prefer-dark", 1, true) then
+    return "dark"
+  end
+
+  if out:find("default", 1, true) or out:find("prefer-light", 1, true) then
+    return "light"
+  end
+
+  return nil
+end
+
+local function preferred_background_mode()
+  return gsettings_background_mode() or ghostty_background_mode()
+end
+
 local function sync_background()
-  local bg = ghostty_background_mode()
+  local bg = preferred_background_mode()
   if bg and vim.o.background ~= bg then
     vim.o.background = bg
   end
@@ -58,10 +83,12 @@ end
 
 sync_background()
 
-vim.api.nvim_create_autocmd({ "UIEnter", "FocusGained" }, {
+vim.api.nvim_create_autocmd({ "VimEnter", "UIEnter", "FocusGained", "ColorScheme" }, {
   callback = function()
-    sync_background()
-    sync_catppuccin_variant()
+    vim.schedule(function()
+      sync_background()
+      sync_catppuccin_variant()
+    end)
   end,
 })
 

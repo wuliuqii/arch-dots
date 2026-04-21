@@ -253,11 +253,6 @@ layout {
     }
 }
 
-layer-rule {
-    match namespace="^quickshell$"
-    place-within-backdrop true
-}
-
 overview {
     workspace-shadow {
         off
@@ -657,8 +652,12 @@ binds {
 
 include "dms/cursor.kdl"
 
+include "dms/wpblur.kdl"
+
 include "dms/outputs.kdl"
 
-include "dms/windowrules.kdl"
+// DMS may remove its generated windowrules file when there are no rules.
+// Keep the include disabled until we actually add window rules there.
+// include "dms/windowrules.kdl"
 
 include "dms/binds.kdl"

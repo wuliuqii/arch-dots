@@ -128,6 +128,7 @@ GitHub CLI authentication across machines, commit only the encrypted
 - fish + zoxide + starship
 - git + lazygit + GitHub CLI
 - neovim/LazyVim
+- Noto CJK + Sarasa CJK font stack
 - btop with Catppuccin light/dark themes
 - OpenAI Codex and cc-switch helpers
 - fcitx5 + rime-ice

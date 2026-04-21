@@ -26,12 +26,20 @@ if data.get(key) is value:
 
 data[key] = value
 path.write_text(json.dumps(data, indent=2) + "\n")
+print("changed")
 PY
 }
 
-update_json_flag "$session_file" "themeModeAutoEnabled" "false"
-update_json_flag "$settings_file" "syncModeWithPortal" "false"
+changed=0
 
-if systemctl --user --quiet is-active dms.service 2>/dev/null; then
+if [[ "$(update_json_flag "$session_file" "themeModeAutoEnabled" "false")" == "changed" ]]; then
+  changed=1
+fi
+
+if [[ "$(update_json_flag "$settings_file" "syncModeWithPortal" "false")" == "changed" ]]; then
+  changed=1
+fi
+
+if [[ $changed -eq 1 ]] && systemctl --user --quiet is-active dms.service 2>/dev/null; then
   systemctl --user restart dms.service
 fi
